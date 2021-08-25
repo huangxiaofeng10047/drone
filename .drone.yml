@@ -1,142 +1,142 @@
 # ---
+kind: pipeline
+type: docker
+name: linux-amd64
+
+platform:
+  arch: amd64
+  os: linux
+
+steps:
+- name: test
+  image: golang:1.14.15
+  commands:
+  - export GO111MODULE=on 
+  - export GOPROXY=https://goproxy.cn
+  - go test ./...
+  
+- name: build
+  image: golang:1.14.15
+  commands:
+  - sh scripts/build.sh
+  environment:
+    GOARCH: amd64
+    GOOS: linux
+
+- name: publish
+  image: plugins/docker:18
+  settings:
+    auto_tag: true
+    auto_tag_suffix: linux-amd64
+    dockerfile: docker/Dockerfile.server.linux.amd64
+    repo: huangxiaofenglogin/drone
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event:
+    - push
+    - tag
+
+# ---
 # kind: pipeline
 # type: docker
-# name: linux-amd64
+# name: linux-arm64
 
 # platform:
-#   arch: amd64
+#   arch: arm64
 #   os: linux
 
 # steps:
-# - name: test
-#   image: golang:1.14.15
-#   commands:
-#   - export GO111MODULE=on 
-#   - export GOPROXY=https://goproxy.cn
-#   - go test ./...
-  
 # - name: build
 #   image: golang:1.14.15
 #   commands:
 #   - sh scripts/build.sh
 #   environment:
-#     GOARCH: amd64
+#     GOARCH: arm64
 #     GOOS: linux
 
 # - name: publish
 #   image: plugins/docker:18
 #   settings:
 #     auto_tag: true
-#     auto_tag_suffix: linux-amd64
-#     dockerfile: docker/Dockerfile.server.linux.amd64
+#     auto_tag_suffix: linux-arm64
+#     dockerfile: docker/Dockerfile.server.linux.arm64
 #     repo: huangxiaofenglogin/drone
 #     username:
 #       from_secret: docker_username
 #     password:
 #       from_secret: docker_password
-#   when:
-#     event:
-#     - push
-#     - tag
+
+# trigger:
+#   event:
+#   - push
+#   - tag
+
+# # depends_on:
+# # - linux-amd64
 
 # ---
-kind: pipeline
-type: docker
-name: linux-arm64
+# kind: pipeline
+# type: docker
+# name: linux-arm
 
-platform:
-  arch: arm64
-  os: linux
+# platform:
+#   arch: arm
+#   os: linux
 
-steps:
-- name: build
-  image: golang:1.14.15
-  commands:
-  - sh scripts/build.sh
-  environment:
-    GOARCH: arm64
-    GOOS: linux
+# steps:
+# - name: build
+#   image: golang:1.14.15
+#   commands:
+#   - sh scripts/build.sh
+#   environment:
+#     GOARCH: arm
+#     GOOS: linux
 
-- name: publish
-  image: plugins/docker:18
-  settings:
-    auto_tag: true
-    auto_tag_suffix: linux-arm64
-    dockerfile: docker/Dockerfile.server.linux.arm64
-    repo: huangxiaofenglogin/drone
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
+# - name: publish
+#   image: plugins/docker:18
+#   settings:
+#     auto_tag: true
+#     auto_tag_suffix: linux-arm
+#     dockerfile: docker/Dockerfile.server.linux.arm
+#     repo: huangxiaofenglogin/drone
+#     username:
+#       from_secret: docker_username
+#     password:
+#       from_secret: docker_password
 
-trigger:
-  event:
-  - push
-  - tag
+# trigger:
+#   event:
+#   - push
+#   - tag
 
-# depends_on:
-# - linux-amd64
+# # depends_on:
+# # - linux-amd64
 
----
-kind: pipeline
-type: docker
-name: linux-arm
+# ---
+# kind: pipeline
+# type: docker
+# name: manifest
 
-platform:
-  arch: arm
-  os: linux
+# steps:
+# - name: publish
+#   image: plugins/manifest:1.2
+#   settings:
+#     auto_tag: true
+#     ignore_missing: true
+#     spec: docker/manifest.server.tmpl
+#     username:
+#       from_secret: docker_username
+#     password:
+#       from_secret: docker_password
 
-steps:
-- name: build
-  image: golang:1.14.15
-  commands:
-  - sh scripts/build.sh
-  environment:
-    GOARCH: arm
-    GOOS: linux
-
-- name: publish
-  image: plugins/docker:18
-  settings:
-    auto_tag: true
-    auto_tag_suffix: linux-arm
-    dockerfile: docker/Dockerfile.server.linux.arm
-    repo: huangxiaofenglogin/drone
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-
-trigger:
-  event:
-  - push
-  - tag
+# trigger:
+#   event:
+#   - push
+#   - tag
 
 # depends_on:
-# - linux-amd64
-
----
-kind: pipeline
-type: docker
-name: manifest
-
-steps:
-- name: publish
-  image: plugins/manifest:1.2
-  settings:
-    auto_tag: true
-    ignore_missing: true
-    spec: docker/manifest.server.tmpl
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-
-trigger:
-  event:
-  - push
-  - tag
-
-depends_on:
-- linux-arm64
-- linux-arm
+# - linux-arm64
+# - linux-arm
